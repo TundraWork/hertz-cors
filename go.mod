@@ -1,4 +1,4 @@
-module github.com/hertz-contrib/cors
+module github.com/tundrawork/hertz-cors
 
 go 1.16
 

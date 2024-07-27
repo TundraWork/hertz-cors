@@ -36,9 +36,12 @@ import (
 )
 
 func main() {
-	h := server.Default(server.WithHostPorts("127.0.0.1:8080"))
+	h := server.Default(
+		server.WithHostPorts("127.0.0.1:8080"),
+		server.WithHandleMethodNotAllowed(true),  // MUST be set to true to handle OPTIONS request
+	)
 
-	h.Use(cors.New(cors.Config{
+	cors := cors.New(cors.Config{
 		AllowOrigins:     []string{"https://foo.com"}, // Allowed domains, need to bring schema
 		AllowMethods:     []string{"PUT", "PATCH"},    // Allowed request methods
 		AllowHeaders:     []string{"Origin"},          // Allowed request headers
@@ -48,11 +51,18 @@ func main() {
 			return origin == "https://github.com"
 		},
 		MaxAge: 12 * time.Hour, // Maximum length of upload_file-side cache preflash requests (seconds)
-	}))
-
-	h.GET("/cors", func(ctx context.Context, c *app.RequestContext) {
-		c.String(consts.StatusOK, "Hello hertz!")
 	})
+
+	h.NoMethod(cors)  // Handle OPTIONS request by the CORS middleware
+
+	h.GET("/ping", handler.Ping)  // Normal request without CORS
+
+	api := h.Group("/api", cors)  // create a route group with CORS middleware
+	api.GET("/challenge", handler.Challenge)  // route with CORS support
+	api.POST("/validate", handler.Validate)  // route with CORS support
+
+	// ... or add CORS middleware to a single route
+	h.POST("/upload", append([]app.HandlerFunc{cors}, handler.Upload)...)  // route with CORS support
 
 	h.Spin()
 }

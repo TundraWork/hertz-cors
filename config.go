@@ -30,6 +30,7 @@ package cors
 import (
 	"context"
 	"errors"
+	"reflect"
 	"strings"
 	"time"
 
@@ -83,6 +84,10 @@ type Config struct {
 	// Allows usage of file:// schema (dangerous!) use it only when you 100% sure it's needed
 	AllowFiles bool
 }
+
+var (
+	corsInstance *cors
+)
 
 // AddAllowMethods is allowed to add custom methods
 func (c *Config) AddAllowMethods(methods ...string) {
@@ -190,8 +195,16 @@ func Default() app.HandlerFunc {
 
 // New returns the location middleware with user-defined custom configuration.
 func New(config Config) app.HandlerFunc {
-	cors := newCors(config)
-	return func(ctx context.Context, c *app.RequestContext) {
-		cors.applyCors(c)
+	corsInstance = newCors(config)
+	return actualHandler
+}
+
+func actualHandler(ctx context.Context, c *app.RequestContext) {
+	// only apply CORS if the request has the CORS handler attached
+	for _, h := range c.Handlers() {
+		if reflect.ValueOf(h).Pointer() == reflect.ValueOf(actualHandler).Pointer() {
+			corsInstance.applyCors(c)
+			break
+		}
 	}
 }
