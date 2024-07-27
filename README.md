@@ -11,13 +11,13 @@ This repo forks from [gin cors](https://github.com/gin-contrib/cors) and adapt i
 Download and install it:
 
 ```sh
-go get github.com/hertz-contrib/cors
+go get github.com/tundrawork/hertz-cors
 ```
 
 Import it in your code:
 
 ```go
-import "github.com/hertz-contrib/cors"
+import "github.com/tundrawork/hertz-cors"
 ```
 
 ### Canonical example
@@ -29,7 +29,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/hertz-contrib/cors"
+	"github.com/tundrawork/hertz-cors"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -38,7 +38,7 @@ import (
 func main() {
 	h := server.Default(
 		server.WithHostPorts("127.0.0.1:8080"),
-		server.WithHandleMethodNotAllowed(true),  // MUST set to true to handle OPTIONS requests
+		server.WithHandleMethodNotAllowed(true),  // MUST set to true to enable hertz's handling of OPTIONS requests
 	)
 
 	cors := cors.New(cors.Config{
@@ -53,9 +53,9 @@ func main() {
 		MaxAge: 12 * time.Hour, // Maximum length of upload_file-side cache preflash requests (seconds)
 	})
 
-	h.NoMethod(cors)  // Handle OPTIONS request by the CORS middleware
+	h.NoMethod(cors)  // handle OPTIONS request by the CORS middleware
 
-	h.GET("/ping", handler.Ping)  // Normal request without CORS
+	h.GET("/ping", handler.Ping)  // normal route without CORS support
 
 	// add the CORS middleware to a route group
 	api := h.Group("/api", cors)  // create a route group with CORS middleware
