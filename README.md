@@ -38,7 +38,7 @@ import (
 func main() {
 	h := server.Default(
 		server.WithHostPorts("127.0.0.1:8080"),
-		server.WithHandleMethodNotAllowed(true),  // MUST be set to true to handle OPTIONS request
+		server.WithHandleMethodNotAllowed(true),  // MUST set to true to handle OPTIONS requests
 	)
 
 	cors := cors.New(cors.Config{
@@ -57,11 +57,12 @@ func main() {
 
 	h.GET("/ping", handler.Ping)  // Normal request without CORS
 
+	// add the CORS middleware to a route group
 	api := h.Group("/api", cors)  // create a route group with CORS middleware
 	api.GET("/challenge", handler.Challenge)  // route with CORS support
 	api.POST("/validate", handler.Validate)  // route with CORS support
 
-	// ... or add CORS middleware to a single route
+	// ... or add the CORS middleware to a single route
 	h.POST("/upload", append([]app.HandlerFunc{cors}, handler.Upload)...)  // route with CORS support
 
 	h.Spin()
